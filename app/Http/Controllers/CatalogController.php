@@ -69,22 +69,34 @@ class CatalogController extends Controller{
         
         if($data['sMethod']==='type'){
             $file=fopen('books.csv','r');
-            $data=[];
+            $ret=[];
             while (($field=fgetcsv($file))!== FALSE) {
                 if($field[4]===$data['bName']){
-                    array_push($data,[
+                    array_push($ret,[
                         'id'=>$field[0],
                         'name'=>$field[1],
-                        'price'=>$field[2],
-                        'qty'=>$field[3],
-                        'topic'=>$field[4],
                     ]);
                 }
             }
             fclose($file);
-            return $data;
+            return $ret;
         }
-        else if($data['sMethod'==='name']){}
+        else if($data['sMethod']==='name'){
+            $file=fopen('books.csv','r');
+            $ret=[];
+            while (($field=fgetcsv($file))!== FALSE) {
+                if($field[0]===$data['bName']){
+                    array_push($ret,[
+                        'id'=>$field[0],
+                        'name'=>$field[1],
+                    ]);
+                    fclose($file);
+                    return $ret;
+                }
+            }
+            fclose($file);
+            return redirect('home');
+        }
     }
 
     public function info($id)
