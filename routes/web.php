@@ -1,0 +1,24 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Application Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register all of the routes for an application.
+| It is a breeze. Simply tell Lumen the URIs it should respond to
+| and give it the Closure to call when that URI is requested.
+|
+*/
+
+$router->get('/', function () use ($router) {
+    return $router->app->version();
+});
+
+$router->get('/books',['uses'=>'CatalogController@index','as'=>'home']);
+$router->post('/books/search',['uses'=>'CatalogController@show']);
+$router->get('/info/{id}',['uses'=>'CatalogController@info']);
+
+$router->get('/read',['as'=>'read','uses'=>'CatalogController@read']);
+
+$router->get('/write','CatalogController@write');
