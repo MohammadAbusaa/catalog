@@ -18,6 +18,7 @@ $router->get('/', function () use ($router) {
 $router->get('/books',['uses'=>'CatalogController@index','as'=>'home']);
 $router->get('/books/search',['uses'=>'CatalogController@show']);
 $router->get('/info/{id}',['uses'=>'CatalogController@info']);
+$router->put('/purchase/{id}',['uses'=>'CatalogController@purchase']);
 
 $router->get('/read',['as'=>'read','uses'=>'CatalogController@read']);
 

@@ -4,17 +4,17 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 
-class CatalogController extends Controller{
-    public function write()
-    {
+class CatalogController extends Controller{//this controller handles catalog server requests 
+    public function write()//this function is used for testing purposes only, and to init
+    {                      //the csv file used to store books info
         $file=fopen('books.csv','w');
         $data=[ //  data is stored as -> id,name,price,quantity,topic
-            ['1','become pro in dos','60000$','10','distributed systems'],
-            ['2','beat dos in 40 mins a day','400$','0','distributed systems'],
-            ['3','learn python','250$','300','undergraduate school'],
+            ['1','How to get a good grade in DOS in 40 minutes a day','60000$','10','distributed systems'],
+            ['2','RPCs for noobs','400$','0','distributed systems'],
+            ['3','Xen and the art of survivng Undergraduate school','250$','300','undergraduate school'],
             [
                 '4',
-                'from zero to hero; complete tutorial for ruby',
+                'Cooking for the impatient undergrad',
                 '500$',
                 '6',
                 'undergraduate school',
@@ -27,16 +27,16 @@ class CatalogController extends Controller{
         return redirect('read');
     }
 
-    public function read()
+    public function read()//this function is used for testing purposes only.
     {
         if(file_exists('books.csv')){
             $file=fopen('books.csv','r');
             $data=[];
             while (($field=fgetcsv($file))!== FALSE) {
                 array_push($data,[
-                    'name'=>$field[0],
-                    'price'=>$field[1],
-                    'qty'=>$field[2],
+                    'name'=>$field[1],
+                    'price'=>$field[2],
+                    'qty'=>$field[3],
                 ]);
             }
             fclose($file);
@@ -45,7 +45,7 @@ class CatalogController extends Controller{
         }
         else return 'file not found!';
     }
-    public function index()
+    public function index()//this function is used to fetch and return all books in the store
     {
         $file=fopen('books.csv','r');
         $data=[];
@@ -60,7 +60,7 @@ class CatalogController extends Controller{
         return $data;
     }
 
-    public function show(Request $request)
+    public function show(Request $request)//this function handles search requests
     {
         $data=$this->validate($request,[
             'bName'=>'required',
@@ -99,7 +99,7 @@ class CatalogController extends Controller{
         }
     }
 
-    public function info($id)
+    public function info($id)//this function returns the info for a specific book
     {
         try {
             (Int)$id;
@@ -124,6 +124,27 @@ class CatalogController extends Controller{
         fclose($file);
 
         return redirect('home');
+    }
+
+    public function purchase($id)//this function handles update requests from order server
+    {
+        try{
+            (int)$id;
+        }
+        catch(\Throwable $th){
+            return 'FAILED!';
+        }
+
+        $file=fopen('books.csv','r');
+        $data=[];
+        while(($f=fgetcsv($file))!==FALSE){
+            if($f[0]==$id)$f[3]--;
+            array_push($data,$f);
+        }
+        fclose($file);
+        $file=fopen('books.csv','w');
+        foreach($data as $line)fputcsv($file,$line);
+        fclose($file);
     }
 
 }
