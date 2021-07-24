@@ -79,7 +79,7 @@ class CatalogController extends Controller{//this controller handles catalog ser
                 }
             }
             fclose($file);
-            return $ret;
+            return count($ret)>0?$ret:redirect('home');
         }
         else if($data['sMethod']==='name'){
             $file=fopen('books.csv','r');
