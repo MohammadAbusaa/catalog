@@ -1,29 +1,15 @@
 <?php
 
-namespace App\Providers;
-
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 
-
-class AppServiceProvider extends ServiceProvider
+class Startup  
 {
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        // $this->app->singleton(App\Startup::class,function($app){
-        //     error_log('register');
-        //     return new App\Startup();
-        // });
+    public function __construct() {
+        $this->init();
     }
-
-    public function boot()
+    
+    public function init()
     {
         $arr=[];
         try {

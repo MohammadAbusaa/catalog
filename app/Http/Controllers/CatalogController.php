@@ -2,6 +2,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
+use App\Jobs\InvalidateCache;
 
 
 class CatalogController extends Controller{//this controller handles catalog server requests 
@@ -19,6 +22,27 @@ class CatalogController extends Controller{//this controller handles catalog ser
                 '6',
                 'undergraduate school',
             ],
+            [
+                '5',
+                'How to finish project 3 on time',
+                '200$',
+                '9',
+                'undergraduate school'
+            ],
+            [
+                '6',
+                'Why theory classes are so hard',
+                '1000$',
+                '2',
+                'undergraduate school',
+            ],
+            [
+                '7',
+                'Spring in the pioneer valley',
+                '3610$',
+                '7',
+                'distributed systems'
+            ]
         ];
         foreach($data as $field)fputcsv($file,$field);
 
@@ -95,7 +119,7 @@ class CatalogController extends Controller{//this controller handles catalog ser
                 }
             }
             fclose($file);
-            return redirect('home');
+            return null;
         }
     }
 
@@ -104,7 +128,7 @@ class CatalogController extends Controller{//this controller handles catalog ser
         try {
             (Int)$id;
         } catch (\Throwable $th) {
-            return redirect('home');
+            return redirect('192.168.1.19:8000');
         }
 
         $file=fopen('books.csv','r');
@@ -134,6 +158,8 @@ class CatalogController extends Controller{//this controller handles catalog ser
         catch(\Throwable $th){
             return 'FAILED!';
         }
+        if($id<1||$id>2)return 'FAILED!';
+        set_time_limit(60);
 
         $file=fopen('books.csv','r');
         $data=[];
@@ -145,6 +171,67 @@ class CatalogController extends Controller{//this controller handles catalog ser
         $file=fopen('books.csv','w');
         foreach($data as $line)fputcsv($file,$line);
         fclose($file);
+
+        try {
+            $client=new Client();
+            $client->delete('192.168.1.19:7999/cache/invalidate/'.$id,['timeout'=>10]);
+        } catch(ConnectException $t){
+            error_log(GuzzleHttp\Psr7\Message::toString($t->getRequest()));
+        }
+        catch(\Throwable $e){
+            error_log($e->getMessage());
+        }
+        try{
+            $res=(new Client())->put('192.168.1.21:7999/info/update/'.$id);
+            error_log('update response from 7999 : ');
+            error_log($res->getBody());
+        } catch(ConnectException $e){
+            error_log(GuzzleHttp\Psr7\Message::toString($e->getRequest()));
+        } catch (\Throwable $t){
+            error_log($t->getMessage());
+        }
+        try{
+            $res=(new Client())->put('192.168.1.21:7998/info/update/'.$id);
+            error_log('update response from 7998 : ');
+            error_log($res->getBody());
+        } catch(ConnectException $e){
+            error_log(GuzzleHttp\Psr7\Message::toString($e->getRequest()));
+        } catch (\Throwable $t){
+            error_log($t->getMessage());
+        }
+    }
+
+    public function update($id)
+    {
+        try{
+            (int)$id;
+        }
+        catch(\Throwable $th){
+            return 'FAILED! INT';
+        }
+        
+        $file=fopen('books.csv','r');
+        $data=[];
+        while(($f=fgetcsv($file))!==FALSE){
+            if($f[0]==$id)$f[3]--;
+            array_push($data,$f);
+        }
+        fclose($file);
+        $file=fopen('books.csv','w');
+        foreach($data as $line)fputcsv($file,$line);
+        fclose($file);
+        return 'DONE!';
+    }
+
+    public function repInfo()
+    {
+        $file=fopen('books.csv','r');
+        $data=[];
+        while(($x=fgetcsv($file))!==FALSE){
+            if($x[0]==1||$x[0]==2)array_push($data,$x);
+        }
+        fclose($file);
+        return $data;
     }
 
 }
